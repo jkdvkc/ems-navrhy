@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMS 04 Signal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0C0E;
+  --surface:#12161A;
+  --surface-2:#171C21;
+  --line:rgba(255,255,255,0.07);
+  --line-strong:rgba(255,255,255,0.14);
+  --fg:#E6EAEE;
+  --fg-dim:#8A949D;
+  --fg-faint:#5A646D;
+  --accent:#2E86FF;
+  --amber:#FFB020;
+  --redorange:#FF5A1F;
+  --green:#39D98A;
+  --ems:#0A5CB8;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:'Inter Tight',system-ui,-apple-system,Segoe UI,sans-serif;
+  --gutter:16px;
+  --bar:26px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  padding-top:var(--bar);
+  padding-bottom:44px;
+}
+img{display:block;max-width:100%}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- concept label bar (outside the design) ---------- */
+.conceptbar{
+  position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:900;
+  background:#000;color:#4C5660;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  display:flex;align-items:center;padding:0 var(--gutter);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding:0 var(--gutter)}
+section{border-top:1px solid var(--line)}
+.sec{padding:64px 0}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--fg-faint);
+  text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:0 0 18px;
+}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+.eyebrow .idx{color:var(--accent)}
+h1,h2,h3,h4{font-family:var(--sans);font-weight:600;letter-spacing:-0.02em;margin:0}
+h2{font-size:clamp(22px,4.4vw,32px);line-height:1.15}
+h3{font-size:18px;line-height:1.25}
+p{margin:10px 0 0;color:var(--fg-dim)}
+p.lead{color:var(--fg);font-size:16px}
+.mono{font-family:var(--mono)}
+
+/* ---------- header ---------- */
+header.site{
+  position:sticky;top:var(--bar);z-index:800;
+  background:rgba(10,12,14,0.92);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.hdr{display:flex;align-items:center;gap:14px;min-height:60px}
+.brandlink{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brandlink:hover{text-decoration:none}
+.brandtxt{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--fg-faint);display:none}
+nav.main{display:none;gap:20px;margin-left:16px;flex:1}
+nav.main a{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;color:var(--fg-dim);text-transform:uppercase}
+nav.main a:hover{color:var(--fg);text-decoration:none}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.langwrap{position:relative}
+.langbtn,.cart{
+  font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+  background:transparent;border:1px solid var(--line-strong);color:var(--fg-dim);
+  padding:7px 10px;border-radius:2px;display:flex;align-items:center;gap:6px;
+}
+.langbtn:hover,.cart:hover{color:var(--fg);border-color:rgba(255,255,255,.3)}
+.langmenu{
+  position:absolute;right:0;top:calc(100% + 6px);min-width:112px;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:2px;
+  padding:4px;display:none;z-index:50;
+}
+.langmenu.open{display:block}
+.langmenu button{
+  display:block;width:100%;text-align:left;background:none;border:0;color:var(--fg-dim);
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:6px 8px;border-radius:2px;
+}
+.langmenu button:hover{background:rgba(255,255,255,.05);color:var(--fg)}
+.langmenu button[aria-current="true"]{color:var(--accent)}
+
+/* ---------- pulsing dot ---------- */
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:0 0 auto;position:relative}
+.dot::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid var(--green);opacity:.5;animation:ping 2.4s ease-out infinite;
+}
+.dot.amber{background:var(--amber)}
+.dot.amber::after{border-color:var(--amber)}
+@keyframes ping{0%{transform:scale(.6);opacity:.7}70%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+
+/* ---------- status strip ---------- */
+.statusstrip{
+  position:fixed;left:0;right:0;bottom:0;z-index:850;
+  background:#07090B;border-top:1px solid var(--line);
+}
+.statusstrip .inner{
+  display:flex;align-items:center;gap:12px;min-height:44px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--fg-dim);
+  overflow:hidden;white-space:nowrap;
+}
+.statusstrip .sep{color:var(--fg-faint);display:none}
+.statusstrip .num{color:var(--amber);margin-left:auto;padding-left:8px}
+.statusstrip .num a{color:var(--amber)}
+.statusstrip .meta{display:none}
+
+/* ---------- hero ---------- */
+.hero{position:relative;border-top:0;padding:52px 0 60px}
+.herogrid{display:grid;grid-template-columns:1fr;gap:32px;align-items:start}
+.h1{font-size:clamp(30px,7.4vw,52px);line-height:1.04;font-weight:600;letter-spacing:-0.035em}
+.h1 em{font-style:normal;color:var(--fg-faint)}
+.hero p.sub{max-width:46ch;font-size:16px}
+.ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.btn{
+  font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  padding:12px 16px;border-radius:2px;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary{background:var(--accent);color:#04121F;font-weight:700}
+.btn-primary:hover{background:#4D99FF;text-decoration:none}
+.btn-ghost{border-color:var(--line-strong);color:var(--fg-dim);background:transparent}
+.btn-ghost:hover{color:var(--fg);border-color:rgba(255,255,255,.32);text-decoration:none}
+.btn-amber{background:transparent;border-color:rgba(255,176,32,.45);color:var(--amber)}
+.btn-amber:hover{border-color:var(--amber);text-decoration:none}
+
+/* console panel */
+.console{
+  position:relative;border:1px solid var(--line-strong);background:var(--surface);
+  border-radius:3px;overflow:hidden;
+}
+.console .bgimg{
+  position:absolute;inset:0;background-image:url('assets/support_room.jpg');
+  background-size:cover;background-position:center;opacity:.10;filter:grayscale(.4) contrast(1.1);
+}
+.console .bgimg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,14,.5),rgba(10,12,14,.92))}
+.console .body{position:relative}
+.console-hd{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--fg-faint);text-transform:uppercase;
+  background:rgba(7,9,11,.55);position:relative;
+}
+.console-hd .tag{margin-left:auto;color:var(--green)}
+.rows{padding:8px 0;position:relative}
+.row{
+  display:flex;align-items:baseline;gap:8px;padding:7px 14px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.02em;color:var(--fg-dim);
+}
+.row .k{color:var(--fg-faint);white-space:nowrap}
+.row .fill{flex:1;min-width:8px;overflow:hidden;color:rgba(255,255,255,.14);white-space:nowrap;letter-spacing:.14em}
+.row .v{color:var(--fg);text-align:right;white-space:nowrap}
+.row .v.ok{color:var(--green)}
+.row .v.amber{color:var(--amber)}
+.row .v.acc{color:var(--accent)}
+.console-ft{
+  border-top:1px solid var(--line);padding:11px 14px;position:relative;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--fg-faint);
+  display:flex;align-items:center;gap:8px;
+}
+
+/* waveform svg block */
+.wavebox{margin-top:0;border-top:1px solid var(--line);position:relative;background:rgba(7,9,11,.4)}
+.wavebox svg{display:block;width:100%;height:64px}
+
+/* ---------- pillars ---------- */
+.pillars{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.pillar{background:var(--bg);padding:24px 18px;position:relative}
+.pillar .no{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--fg-faint)}
+.pillar h3{margin-top:10px}
+.pillar.top{background:var(--surface);box-shadow:inset 3px 0 0 var(--accent)}
+.pillar.top .no{color:var(--accent)}
+.pillar.alert{box-shadow:inset 3px 0 0 var(--redorange)}
+.pillar.alert .no{color:var(--redorange)}
+
+/* ---------- process log (interaktívny) ---------- */
+.log{border:1px solid var(--line);background:var(--surface);border-radius:3px;overflow:hidden}
+.logrow{border-bottom:1px solid var(--line);position:relative}
+.logrow:last-child{border-bottom:0}
+.step{
+  display:grid;grid-template-columns:34px 1fr 16px;gap:12px;align-items:start;
+  width:100%;text-align:left;background:transparent;border:0;color:inherit;
+  font-family:var(--sans);padding:16px 14px;
+  transition:background .25s ease,box-shadow .25s ease;
+}
+.step:hover{background:rgba(255,255,255,.028)}
+.step .ix{font-family:var(--mono);font-size:11px;color:var(--fg-faint);letter-spacing:.08em;padding-top:3px}
+.step > span{min-width:0}
+.step .sth{display:block;font-size:15px;font-weight:500;line-height:1.25;color:var(--fg);letter-spacing:-0.01em;overflow-wrap:anywhere}
+.step .stp{display:block;font-size:13.5px;line-height:1.5;color:var(--fg-dim);margin-top:4px}
+.step .chev{
+  font-family:var(--mono);font-size:11px;color:var(--fg-faint);justify-self:end;padding-top:4px;
+  transition:transform .3s cubic-bezier(.2,.7,.3,1),color .25s ease;
+}
+.logrow.peak .step{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--accent);padding:22px 14px}
+.logrow.peak{border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong)}
+.logrow.peak .step .ix{color:var(--accent)}
+.logrow.peak .step .sth{font-size:clamp(17px,3.6vw,22px);font-weight:600;letter-spacing:-0.02em}
+.logrow.open{background:var(--surface-2)}
+.logrow.open .step{box-shadow:inset 3px 0 0 var(--accent);background:rgba(46,134,255,.055)}
+.logrow.open .step .ix{color:var(--accent)}
+.logrow.open .step .sth{color:#FFFFFF}
+.logrow.open .step .chev{transform:rotate(90deg);color:var(--accent)}
+.logrow.open:not(.peak) .step{padding:22px 14px}
+.logrow.open:not(.peak) .step .sth{font-size:clamp(16px,3.2vw,19px);font-weight:600;letter-spacing:-0.015em}
+
+/* rozbalený panel — čítaný ako otvorený záznam v konzole */
+.panel{overflow:hidden;max-height:0;opacity:0;transition:max-height .34s cubic-bezier(.2,.7,.3,1),opacity .28s ease}
+.panel[hidden]{display:none}
+.logrow.open .panel{opacity:1;max-height:none}
+.panelin{
+  border-top:1px dashed var(--line-strong);background:rgba(7,9,11,.5);
+  box-shadow:inset 3px 0 0 var(--accent);
+  padding:14px 14px 18px;
+}
+.psum{margin:0;color:var(--fg);font-size:14px;line-height:1.55}
+.pcap{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--fg-faint);margin-top:16px;
+}
+.panelin > .pcap:first-child{margin-top:0}
+ul.clines{list-style:none;margin:8px 0 0;padding:0 0 0 10px;border-left:1px solid var(--line-strong)}
+ul.clines li{
+  font-family:var(--mono);font-size:11.5px;line-height:1.75;letter-spacing:.02em;color:var(--fg-dim);
+  padding-left:14px;position:relative;overflow-wrap:anywhere;
+}
+ul.clines li::before{content:"›";position:absolute;left:0;top:0;color:var(--accent);opacity:.8}
+.prow{
+  display:flex;align-items:baseline;gap:8px;margin-top:8px;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;line-height:1.6;
+}
+.prow .pk{color:var(--fg-faint);white-space:nowrap;flex:0 0 auto}
+.prow .pf{flex:1 1 12px;min-width:10px;overflow:hidden;white-space:nowrap;color:rgba(255,255,255,.14);letter-spacing:.14em}
+.prow .pv{flex:0 1 auto;min-width:0;color:var(--fg);text-align:right;overflow-wrap:anywhere}
+.prow.out .pv{color:var(--accent)}
+.prow.solo .pv{color:var(--amber)}
+.pcaps{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.caps{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.cap{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--line-strong);color:var(--fg-dim);padding:5px 8px;border-radius:2px;
+}
+.logrow.loop{background:rgba(255,90,31,.05);box-shadow:inset 3px 0 0 var(--redorange)}
+.logrow.loop .staticstep{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:16px 14px}
+.logrow.loop .ix{font-family:var(--mono);font-size:11px;color:var(--redorange);letter-spacing:.08em;padding-top:3px}
+.logrow.loop h3{font-size:15px;font-weight:500;color:var(--fg)}
+.logrow.loop p{font-size:13.5px}
+.note{
+  margin-top:14px;border:1px dashed var(--line-strong);border-radius:2px;padding:12px 14px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--fg-dim);letter-spacing:.03em;
+}
+.note b{color:var(--amber);font-weight:500}
+@media (prefers-reduced-motion:reduce){
+  .panel{transition:none;opacity:1}
+}
+
+/* ---------- feature blocks ---------- */
+.split{display:grid;grid-template-columns:1fr;gap:24px;align-items:start}
+.split.rev .media{order:-1}
+.media{position:relative;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#000}
+.media img{width:100%;height:100%;object-fit:cover;opacity:.78;filter:contrast(1.05) saturate(.9)}
+.media.tall img{aspect-ratio:4/3}
+.media.wide img{aspect-ratio:16/9}
+.media figcaption{
+  position:absolute;left:0;bottom:0;right:0;padding:8px 10px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim);
+  background:linear-gradient(180deg,rgba(10,12,14,0),rgba(7,9,11,.92));
+}
+.mediapair{display:grid;grid-template-columns:1fr;gap:12px}
+ul.specs{list-style:none;margin:18px 0 0;padding:0}
+ul.specs li{
+  display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--fg-dim);letter-spacing:.02em;
+}
+ul.specs li::before{content:"▸";color:var(--accent);font-size:10px}
+ul.specs li span{color:var(--fg)}
+
+/* svg drawing block */
+.drawing{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:16px 14px}
+.drawing svg{display:block;width:100%;height:auto}
+.drawing .cap{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fg-faint);margin-top:12px;
+}
+
+/* ---------- partners ---------- */
+.partners{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.partners div{
+  background:var(--bg);padding:26px 12px;text-align:center;
+  font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--fg-dim);
+}
+.partners div small{display:block;font-size:9px;letter-spacing:.18em;color:var(--fg-faint);margin-top:6px}
+
+/* ---------- e-shop ---------- */
+.cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.cat{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--line);color:var(--fg-dim);padding:7px 9px;border-radius:2px;background:var(--surface);
+}
+.inv{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--surface)}
+.inv-hd{
+  display:none;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--fg-faint);padding:10px 14px;border-bottom:1px solid var(--line);background:rgba(7,9,11,.5);
+}
+.item{
+  display:grid;grid-template-columns:62px 1fr;gap:12px;padding:14px;border-bottom:1px solid var(--line);
+  align-items:center;
+}
+.item:last-child{border-bottom:0}
+.item .itemfoot{grid-column:1 / -1}
+.thumb{
+  position:relative;width:62px;aspect-ratio:1/1;border:1px solid var(--line-strong);border-radius:2px;
+  background:#0D1115;overflow:hidden;flex:0 0 auto;
+}
+.thumb img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:brightness(.58) contrast(1.12) saturate(.82);
+  transition:filter .3s ease;
+}
+.item:hover .thumb img{filter:brightness(.8) contrast(1.1) saturate(.9)}
+.thumb::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(46,134,255,.10),rgba(7,9,11,.42));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.thumb::before{
+  content:"";position:absolute;left:3px;top:3px;width:7px;height:7px;z-index:2;
+  border-left:1px solid rgba(46,134,255,.55);border-top:1px solid rgba(46,134,255,.55);
+}
+.item > div{min-width:0}
+.item .nm{font-family:var(--mono);font-size:13px;color:var(--fg);letter-spacing:.02em;overflow-wrap:anywhere}
+.item .sp{font-family:var(--mono);font-size:11px;color:var(--fg-faint);margin-top:4px;letter-spacing:.02em;overflow-wrap:anywhere}
+.item .pr{font-family:var(--mono);font-size:14px;color:var(--fg);white-space:nowrap}
+.item .pr small{display:block;font-size:9.5px;color:var(--fg-faint);letter-spacing:.12em;margin-top:3px}
+.stock{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;display:flex;align-items:center;gap:7px;color:var(--green)}
+.stock.low{color:var(--amber)}
+.stock.out{color:var(--fg-faint)}
+.stock i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+.itemfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.add{
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--line-strong);color:var(--fg);padding:9px 12px;border-radius:2px;
+}
+.add:hover{border-color:var(--accent);color:var(--accent)}
+.add[disabled]{opacity:.35;cursor:not-allowed}
+.pay{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;align-items:center}
+.pay span{
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--line);color:var(--fg-dim);padding:7px 9px;border-radius:2px;display:inline-flex;gap:6px;align-items:center;
+}
+.disc{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);letter-spacing:.06em;margin-top:12px}
+
+/* ---------- support ---------- */
+.support{background:var(--surface);position:relative;overflow:hidden}
+.support .bgimg{
+  position:absolute;inset:0;background-image:url('assets/engineer_service.jpg');
+  background-size:cover;background-position:center;opacity:.14;filter:grayscale(.5);
+}
+.support .bgimg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,12,14,.96),rgba(10,12,14,.65))}
+.support .wrap{position:relative}
+.bignum{font-family:var(--mono);font-size:clamp(24px,6.2vw,40px);color:var(--amber);letter-spacing:-0.01em;margin-top:16px;display:block}
+.bignum:hover{text-decoration:none}
+
+/* ---------- contact / footer ---------- */
+.contactgrid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.card{background:var(--bg);padding:20px 16px}
+.card h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-faint);font-weight:400}
+.card .lines{margin-top:12px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:var(--fg-dim);letter-spacing:.02em}
+.card .lines b{color:var(--fg);font-weight:500}
+footer{border-top:1px solid var(--line);padding:26px 0 34px}
+.fbot{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--fg-faint);
+}
+.fbot .r{margin-left:auto}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1)}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- responsive ---------- */
+@media(min-width:600px){
+  .pillars{grid-template-columns:repeat(3,1fr)}
+  .mediapair{grid-template-columns:1fr 1fr}
+  .partners{grid-template-columns:repeat(4,1fr)}
+  .item{grid-template-columns:62px 1fr auto;align-items:center}
+  .item .itemfoot{grid-column:auto}
+  .itemfoot{justify-content:flex-end}
+  .statusstrip .sep{display:inline}
+  .statusstrip .meta{display:inline}
+  .brandtxt{display:block}
+}
+@media(min-width:900px){
+  .sec{padding:92px 0}
+  .hero{padding:76px 0 84px}
+  .herogrid{grid-template-columns:1.05fr .95fr;gap:48px}
+  .split{grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+  nav.main{display:flex}
+  .contactgrid{grid-template-columns:repeat(3,1fr)}
+  .inv-hd{display:grid;grid-template-columns:1fr 320px}
+  .thumb{width:72px}
+  .item{grid-template-columns:72px 1fr auto;padding:14px 18px}
+  .row{font-size:12.5px;padding:8px 18px}
+  .step{grid-template-columns:48px 1fr 18px;padding:18px 20px}
+  .logrow.peak .step,.logrow.open:not(.peak) .step{padding:28px 20px}
+  .logrow.loop .staticstep{grid-template-columns:48px 1fr;padding:18px 20px}
+  .panelin{padding:18px 20px 24px}
+  .psum{font-size:15px}
+  ul.clines li{font-size:12px}
+  .prow{font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  .dot::after{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="conceptbar">NÁVRH 04 — SIGNAL</div>
+
+<header class="site">
+  <div class="wrap hdr">
+    <a class="brandlink" href="#top" aria-label="EMS LIMITED — domov">
+      <svg width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="EMS LIMITED">
+        <rect x="0" y="0" width="40" height="40" rx="2" fill="#0A5CB8"/>
+        <text x="20" y="20" text-anchor="middle" font-family="Inter Tight, sans-serif" font-size="13.5" font-weight="700" fill="#FFFFFF" letter-spacing="0.5">EMS</text>
+        <rect x="6" y="25.5" width="28" height="0.9" fill="#FFFFFF" opacity="0.85"/>
+        <text x="20" y="33.5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="5.2" fill="#FFFFFF" letter-spacing="1.6">LIMITED</text>
+      </svg>
+      <span class="brandtxt">EMS s.r.o.<br>PRIEVIDZA · SK</span>
+    </a>
+    <nav class="main" aria-label="Hlavná navigácia">
+      <a href="#vyroba">Výroba</a>
+      <a href="#proces">Proces</a>
+      <a href="#servis">Servis</a>
+      <a href="#programovanie">Programovanie</a>
+      <a href="#eshop">E-shop</a>
+      <a href="#support">Support</a>
+      <a href="#kontakt">Kontakt</a>
+    </nav>
+    <div class="hdr-right">
+      <div class="langwrap">
+        <button class="langbtn" id="langBtn" aria-haspopup="true" aria-expanded="false"><span id="langCur">SK</span> ▾</button>
+        <div class="langmenu" id="langMenu" role="menu">
+          <button role="menuitem" aria-current="true">SK</button>
+          <button role="menuitem">CZ</button>
+          <button role="menuitem">HU</button>
+          <button role="menuitem">PL</button>
+          <button role="menuitem">DE</button>
+          <button role="menuitem">FR</button>
+          <button role="menuitem">IT</button>
+          <button role="menuitem">ES</button>
+        </div>
+      </div>
+      <button class="cart" id="cartBtn">Košík (<span id="cartN">0</span>)</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap herogrid">
+    <div>
+      <div class="eyebrow"><span class="idx">SYS</span> EMS s.r.o. · Prievidza · od 2022</div>
+      <h1 class="h1">Výroba rozvádzačov.<br><em>Servis, ktorý nespí.</em></h1>
+      <p class="sub lead">Elektrické rozvádzače a riadiace systémy pre výrobcov strojov a priemyselných zákazníkov. Prototyp, séria, zmluvná a projektová výroba. Slovensko a celá EÚ.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#kontakt">Dopyt na rozvádzač</a>
+        <a class="btn btn-amber" href="tel:+421948111074">24/7 — +421 948 111 074</a>
+        <a class="btn btn-ghost" href="#proces">Pozrieť proces</a>
+      </div>
+    </div>
+
+    <div class="console" role="group" aria-label="Prevádzkový panel">
+      <div class="bgimg" aria-hidden="true"></div>
+      <div class="body">
+        <div class="console-hd">
+          <span class="dot" aria-hidden="true"></span>
+          <span>EMS // STATUS</span>
+          <span class="tag">ONLINE</span>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="k">SUPPORT</span><span class="fill" aria-hidden="true">................................................</span><span class="v ok">24/7 AKTÍVNY</span></div>
+          <div class="row"><span class="k">DISPEČING</span><span class="fill" aria-hidden="true">................................................</span><span class="v amber">+421 948 111 074</span></div>
+          <div class="row"><span class="k">OBCHOD</span><span class="fill" aria-hidden="true">................................................</span><span class="v">+421 948 247 000</span></div>
+          <div class="row"><span class="k">LOKALITA</span><span class="fill" aria-hidden="true">................................................</span><span class="v">PRIEVIDZA, SK</span></div>
+          <div class="row"><span class="k">PÔSOBNOSŤ</span><span class="fill" aria-hidden="true">................................................</span><span class="v">SLOVENSKO + EÚ</span></div>
+          <div class="row"><span class="k">DOKUMENTÁCIA</span><span class="fill" aria-hidden="true">................................................</span><span class="v acc">EPLAN P8 / WSCAD</span></div>
+          <div class="row"><span class="k">TESTOVANIE</span><span class="fill" aria-hidden="true">................................................</span><span class="v">STN / UL / CSA / ATEX</span></div>
+          <div class="row"><span class="k">SKÚSENOSTI</span><span class="fill" aria-hidden="true">................................................</span><span class="v">25+ ROKOV</span></div>
+        </div>
+        <div class="wavebox" aria-hidden="true">
+          <!-- original SVG: signal / waveform element -->
+          <svg viewBox="0 0 600 64" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sigfade" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#2E86FF" stop-opacity="0"/>
+                <stop offset="0.18" stop-color="#2E86FF" stop-opacity="0.9"/>
+                <stop offset="0.82" stop-color="#2E86FF" stop-opacity="0.9"/>
+                <stop offset="1" stop-color="#2E86FF" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g stroke="rgba(255,255,255,0.07)" stroke-width="1">
+              <line x1="0" y1="32" x2="600" y2="32"/>
+              <line x1="120" y1="8" x2="120" y2="56"/>
+              <line x1="240" y1="8" x2="240" y2="56"/>
+              <line x1="360" y1="8" x2="360" y2="56"/>
+              <line x1="480" y1="8" x2="480" y2="56"/>
+            </g>
+            <path d="M0 32 H52 V14 H96 V32 H148 V46 H176 V32 H236 V10 H268 V50 H292 V32 H352 V20 H388 V32 H452 V44 H472 V18 H508 V32 H600"
+                  fill="none" stroke="url(#sigfade)" stroke-width="1.4" stroke-linejoin="miter"/>
+            <path d="M0 50 H88 V40 H140 V50 H212 V34 H256 V50 H340 V42 H400 V50 H600"
+                  fill="none" stroke="rgba(255,176,32,0.35)" stroke-width="1"/>
+            <circle cx="268" cy="50" r="2.4" fill="#FFB020"/>
+            <circle cx="472" cy="18" r="2.4" fill="#2E86FF"/>
+          </svg>
+        </div>
+        <div class="console-ft">
+          <span class="dot amber" aria-hidden="true"></span>
+          <span>HAVARIJNÁ LINKA JE OBSADENÁ NONSTOP — AJ V NOCI, AJ CEZ SVIATKY</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PILIERE ============ -->
+<section id="piliere">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">01</span> Tri piliere</div>
+    <div class="pillars">
+      <div class="pillar top">
+        <div class="no">P01 — JADRO</div>
+        <h3>Výroba rozvádzačov</h3>
+        <p>Prototypová, sériová, zmluvná a projektová výroba. Nové systémy aj retrofit existujúcich.</p>
+      </div>
+      <div class="pillar">
+        <div class="no">P02</div>
+        <h3>Záručný a pozáručný servis</h3>
+        <p>Pravidelná údržba, analýza škôd, správa náhradných dielov.</p>
+      </div>
+      <div class="pillar alert">
+        <div class="no">P03 — NONSTOP</div>
+        <h3>Support 24/7</h3>
+        <p>Technická podpora a vzdialená správa bez prerušenia. +421 948 111 074.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCES ============ -->
+<section id="proces">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">02</span> Proces — 7 krokov</div>
+    <h2>Od analýzy po trvalú podporu.</h2>
+    <p class="lead" style="max-width:62ch">Kompletný reťazec pod jednou strechou. <strong style="color:var(--fg)">Každý krok si môžete objednať aj samostatne</strong> — nemusíte brať celý balík.</p>
+
+    <div class="log" id="proclog" style="margin-top:26px">
+      <div class="logrow">
+        <button class="step" type="button" id="st01" aria-expanded="false" aria-controls="pn01" data-step>
+          <span class="ix">01</span>
+          <span>
+            <span class="sth">Analýza potrieb zákazníka</span>
+            <span class="stp">Zmapujeme technológiu, prostredie a požiadavky na riadenie.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn01" role="region" aria-labelledby="st01" hidden>
+          <div class="panelin">
+          <p class="psum">Na začiatku zisťujeme, čo má zariadenie reálne robiť, v akom prostredí bude pracovať a aké normy musí spĺňať.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>obhliadka prevádzky alebo online konzultácia</li>
+            <li>prevzatie existujúcej dokumentácie a schém</li>
+            <li>definovanie vstupov, výstupov a výkonových parametrov</li>
+            <li>určenie noriem a prostredia (STN, UL, CSA, ATEX)</li>
+            <li>dohoda o termínoch a rozsahu</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">technické zadanie a cenová ponuka</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow">
+        <button class="step" type="button" id="st02" aria-expanded="false" aria-controls="pn02" data-step>
+          <span class="ix">02</span>
+          <span>
+            <span class="sth">Návrh technických a automatizačných riešení</span>
+            <span class="stp">Koncept riadenia, topológia, výber komponentov.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn02" role="region" aria-labelledby="st02" hidden>
+          <div class="panelin">
+          <p class="psum">Navrhneme konkrétne riešenie, vrátane výberu komponentov a riadiacej platformy.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>koncepčný návrh zapojenia</li>
+            <li>výber platformy (EATON, Siemens, Schneider, LOXONE alebo systém podľa požiadavky klienta)</li>
+            <li>dimenzovanie istenia a výkonových prvkov</li>
+            <li>návrh bezpečnostnej úrovne</li>
+            <li>posúdenie priestorových možností skrine</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">schválený technický návrh a kusovník</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow">
+        <button class="step" type="button" id="st03" aria-expanded="false" aria-controls="pn03" data-step>
+          <span class="ix">03</span>
+          <span>
+            <span class="sth">Vypracovanie projektovej a výrobnej dokumentácie</span>
+            <span class="stp">Schémy a výkresy v EPLAN P8 a WSCAD.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn03" role="region" aria-labelledby="st03" hidden>
+          <div class="panelin">
+          <p class="psum">Všetko nakreslíme a zdokumentujeme skôr, než sa čokoľvek vyrobí.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>schémy v EPLAN P8 alebo WSCAD</li>
+            <li>výrobné výkresy a rozmiestnenie v skrini</li>
+            <li>svorkovnicové plány a označenie vodičov</li>
+            <li>zoznam materiálu</li>
+            <li>revízne podklady</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">kompletná výrobná a projektová dokumentácia, ktorá zostáva zákazníkovi</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow peak open">
+        <button class="step" type="button" id="st04" aria-expanded="true" aria-controls="pn04" data-step>
+          <span class="ix">04</span>
+          <span>
+            <span class="sth">Výroba elektrických rozvádzačov a riadiacich systémov</span>
+            <span class="stp">Jadro firmy. Osadenie, zapojenie, značenie a 100 % testovanie v súlade s normami STN, UL, CSA a ATEX.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn04" role="region" aria-labelledby="st04">
+          <div class="panelin">
+          <p class="psum">Jadro firmy. Rozvádzače vyrábame vo vlastných priestoroch, kde máme plnú kontrolu nad kvalitou a technickým spracovaním.</p>
+          <div class="pcap">Formy výroby</div>
+          <div class="pcaps">
+            <span class="cap">Prototypová</span>
+            <span class="cap">Sériová</span>
+            <span class="cap">Zmluvná</span>
+            <span class="cap">Projektová</span>
+          </div>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>mechanická príprava skrine</li>
+            <li>osadenie na DIN lišty</li>
+            <li>zapojenie a ukladanie vodičov</li>
+            <li>označenie podľa dokumentácie</li>
+            <li>100 % testovanie v súlade s normami STN, UL, CSA, ATEX</li>
+          </ul>
+          <div class="prow"><span class="pk">RETROFIT</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">pokrývame aj modernizáciu existujúcich zariadení, nielen nové systémy</span></div>
+          <div class="prow"><span class="pk">ROZMERY A VÝKONY</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">sme schopní vyrobiť riešenia akýchkoľvek rozmerov, výkonov a funkčných požiadaviek</span></div>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">odskúšaný rozvádzač s protokolom a dokumentáciou</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow">
+        <button class="step" type="button" id="st05" aria-expanded="false" aria-controls="pn05" data-step>
+          <span class="ix">05</span>
+          <span>
+            <span class="sth">Programovanie riadiacich jednotiek a systémov</span>
+            <span class="stp">PLC, HMI, vizualizácie a vzdialená správa.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn05" role="region" aria-labelledby="st05" hidden>
+          <div class="panelin">
+          <p class="psum">Rozvádzač oživíme softvérovo, aby stroj robil to, čo má.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>programovanie PLC a komplexných riadiacich systémov</li>
+            <li>programovanie HMI a vizualizácií</li>
+            <li>vzdialená správa</li>
+            <li>integrácia robotických ramien do výrobných procesov</li>
+            <li>riadenie elektrických a pneumatických pohonov</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">funkčný riadiaci program a vizualizácia pre obsluhu</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow">
+        <button class="step" type="button" id="st06" aria-expanded="false" aria-controls="pn06" data-step>
+          <span class="ix">06</span>
+          <span>
+            <span class="sth">Montáž a zapojenie u zákazníka</span>
+            <span class="stp">Inštalácia na mieste, prepojenie s technológiou a pohonmi.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn06" role="region" aria-labelledby="st06" hidden>
+          <div class="panelin">
+          <p class="psum">Hotové riešenie montujeme a zapájame priamo v prevádzke, pri nových projektoch aj pri modernizácii existujúcich technológií.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>doprava a osadenie rozvádzača</li>
+            <li>prepojenie na technológiu</li>
+            <li>kompletné zapojenie a oživenie výrobných liniek a dopravníkových systémov</li>
+            <li>elektroinštalácie na mieru od priemyselných objektov až po rodinné domy</li>
+            <li>revízie a meranie</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">zariadenie pripojené a pripravené na skúšky</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="logrow">
+        <button class="step" type="button" id="st07" aria-expanded="false" aria-controls="pn07" data-step>
+          <span class="ix">07</span>
+          <span>
+            <span class="sth">Uvedenie do prevádzky a technická podpora</span>
+            <span class="stp">Oživenie, odovzdanie a zaškolenie obsluhy.</span>
+          </span>
+          <span class="chev" aria-hidden="true">&#9656;</span>
+        </button>
+        <div class="panel" id="pn07" role="region" aria-labelledby="st07" hidden>
+          <div class="panelin">
+          <p class="psum">Odovzdáme funkčný celok a zostávame k dispozícii.</p>
+          <div class="pcap">Činnosti</div>
+          <ul class="clines">
+            <li>skúšobná prevádzka a ladenie</li>
+            <li>zaškolenie obsluhy</li>
+            <li>odovzdanie dokumentácie</li>
+            <li>záručný a pozáručný servis</li>
+            <li>pravidelná údržba</li>
+            <li>analýza škôd a správa náhradných dielov</li>
+          </ul>
+          <div class="prow out"><span class="pk">VÝSTUP</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">prevádzkyschopné zariadenie a aktívna zákaznícka podpora</span></div>
+          <div class="prow solo"><span class="pk">OBJEDNANIE</span><span class="pf" aria-hidden="true">............................................................</span><span class="pv">tento krok sa dá objednať aj samostatne</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="logrow loop">
+        <div class="staticstep">
+          <div class="ix">&#8635;</div>
+          <div>
+            <h3>SUPPORT 24/7 — trvalý stav</h3>
+            <p>Po kroku 07 to nekončí. Dispečing +421 948 111 074 je dostupný nepretržite. Servis a údržba sú pre nás rovnako dôležité ako samotná realizácia projektu.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note"><b>POZN.</b> Ktorýkoľvek z krokov 01–07 je možné objednať samostatne — napr. len dokumentáciu, len výrobu rozvádzača alebo len programovanie PLC.</div>
+  </div>
+</section>
+
+<!-- ============ VÝROBA ROZVÁDZAČOV ============ -->
+<section id="vyroba">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">03</span> Výroba rozvádzačov</div>
+    <div class="split">
+      <div>
+        <h2>Rozvádzač je produkt, nie príslušenstvo.</h2>
+        <p class="lead">Staviame elektrické rozvádzače a riadiace systémy na mieru technológie. Od jedného prototypu po sériu, vrátane zmluvnej výroby pre výrobcov strojov.</p>
+        <ul class="specs">
+          <li><span>Prototypová, sériová, zmluvná a projektová výroba</span></li>
+          <li><span>Nové systémy aj retrofit existujúcich rozvádzačov</span></li>
+          <li><span>Dokumentácia a schémy v EPLAN P8 a WSCAD</span></li>
+          <li><span>100 % testovanie podľa STN, UL, CSA a ATEX</span></li>
+          <li><span>Riadenie elektrických a pneumatických pohonov</span></li>
+        </ul>
+        <div class="ctas"><a class="btn btn-primary" href="#kontakt">Poslať podklady</a></div>
+      </div>
+      <div class="mediapair">
+        <figure class="media tall" style="margin:0">
+          <img src="assets/hero_cabinet_dark.jpg" alt="Makro vnútra elektrického rozvádzača s oranžovými svorkovnicami" loading="lazy">
+          <figcaption>Vnútro rozvádzača — osadenie a zapojenie</figcaption>
+        </figure>
+        <figure class="media tall" style="margin:0">
+          <img src="assets/detail_terminals.jpg" alt="Detail svorkovníc s modrými a čiernymi vodičmi" loading="lazy">
+          <figcaption>Svorkovnice — značenie a kontrola</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="drawing" style="margin-top:26px">
+      <!-- original SVG: DIN rail + terminal block technical line drawing -->
+      <svg viewBox="0 0 760 180" role="img" aria-label="Technický nákres svorkovnicového bloku na DIN lište">
+        <g fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1">
+          <!-- DIN rail profile (side) -->
+          <path d="M20 148 H740"/>
+          <path d="M20 148 V132 H34 V120 H726 V132 H740 V148"/>
+          <!-- rail perforation -->
+          <g stroke="rgba(255,255,255,0.14)">
+            <line x1="70" y1="126" x2="96" y2="126"/><line x1="170" y1="126" x2="196" y2="126"/>
+            <line x1="270" y1="126" x2="296" y2="126"/><line x1="370" y1="126" x2="396" y2="126"/>
+            <line x1="470" y1="126" x2="496" y2="126"/><line x1="570" y1="126" x2="596" y2="126"/>
+            <line x1="670" y1="126" x2="696" y2="126"/>
+          </g>
+        </g>
+        <!-- terminal blocks -->
+        <g>
+          <g fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.1">
+            <rect x="60" y="44" width="46" height="76"/><rect x="112" y="44" width="46" height="76"/>
+            <rect x="164" y="44" width="46" height="76"/><rect x="216" y="44" width="46" height="76"/>
+            <rect x="290" y="44" width="46" height="76"/><rect x="342" y="44" width="46" height="76"/>
+            <rect x="394" y="44" width="46" height="76"/><rect x="468" y="44" width="46" height="76"/>
+            <rect x="520" y="44" width="46" height="76"/><rect x="572" y="44" width="46" height="76"/>
+            <rect x="624" y="44" width="46" height="76"/>
+          </g>
+          <!-- screw heads + internal bar -->
+          <g stroke="rgba(255,255,255,0.18)" stroke-width="1" fill="none">
+            <line x1="60" y1="66" x2="106" y2="66"/><line x1="112" y1="66" x2="158" y2="66"/>
+            <line x1="164" y1="66" x2="210" y2="66"/><line x1="216" y1="66" x2="262" y2="66"/>
+            <line x1="290" y1="66" x2="336" y2="66"/><line x1="342" y1="66" x2="388" y2="66"/>
+            <line x1="394" y1="66" x2="440" y2="66"/><line x1="468" y1="66" x2="514" y2="66"/>
+            <line x1="520" y1="66" x2="566" y2="66"/><line x1="572" y1="66" x2="618" y2="66"/>
+            <line x1="624" y1="66" x2="670" y2="66"/>
+            <line x1="60" y1="98" x2="106" y2="98"/><line x1="112" y1="98" x2="158" y2="98"/>
+            <line x1="164" y1="98" x2="210" y2="98"/><line x1="216" y1="98" x2="262" y2="98"/>
+            <line x1="290" y1="98" x2="336" y2="98"/><line x1="342" y1="98" x2="388" y2="98"/>
+            <line x1="394" y1="98" x2="440" y2="98"/><line x1="468" y1="98" x2="514" y2="98"/>
+            <line x1="520" y1="98" x2="566" y2="98"/><line x1="572" y1="98" x2="618" y2="98"/>
+            <line x1="624" y1="98" x2="670" y2="98"/>
+          </g>
+          <g fill="none" stroke="#FFB020" stroke-width="1.1" opacity="0.75">
+            <circle cx="83" cy="56" r="5"/><circle cx="135" cy="56" r="5"/><circle cx="187" cy="56" r="5"/>
+            <circle cx="239" cy="56" r="5"/><circle cx="313" cy="56" r="5"/><circle cx="365" cy="56" r="5"/>
+            <circle cx="417" cy="56" r="5"/><circle cx="491" cy="56" r="5"/><circle cx="543" cy="56" r="5"/>
+            <circle cx="595" cy="56" r="5"/><circle cx="647" cy="56" r="5"/>
+          </g>
+        </g>
+        <!-- incoming conductors -->
+        <g fill="none" stroke="#2E86FF" stroke-width="1.1" opacity="0.8">
+          <path d="M83 44 V22 H203"/><path d="M135 44 V30 H203"/><path d="M187 44 V26"/>
+          <path d="M313 44 V18 H520"/><path d="M365 44 V30 H520"/>
+          <path d="M491 44 V22"/><path d="M595 44 V26 H700 V60"/>
+        </g>
+        <!-- dimension line -->
+        <g stroke="rgba(255,255,255,0.18)" stroke-width="1" fill="none">
+          <line x1="60" y1="166" x2="670" y2="166"/>
+          <line x1="60" y1="161" x2="60" y2="171"/><line x1="670" y1="161" x2="670" y2="171"/>
+        </g>
+        <text x="365" y="178" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#5A646D" letter-spacing="2">SVORKOVNICOVÝ BLOK / DIN TS35</text>
+      </svg>
+      <div class="cap">Schematický rez — osadenie svorkovníc na DIN lištu</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVIS ============ -->
+<section id="servis">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">04</span> Záručný a pozáručný servis</div>
+    <div class="split rev">
+      <figure class="media wide" style="margin:0">
+        <img src="assets/engineer_service.jpg" alt="Technik meria multimetrom v otvorenom rozvádzači" loading="lazy">
+        <figcaption>Servisný zásah — diagnostika na mieste</figcaption>
+      </figure>
+      <div>
+        <h2>Keď to stojí, ide o minúty.</h2>
+        <p class="lead">Servis zariadení v záruke aj po záruke. Pravidelná údržba, analýza škôd a správa náhradných dielov.</p>
+        <ul class="specs">
+          <li><span>Záručný a pozáručný servis</span></li>
+          <li><span>Pravidelná preventívna údržba</span></li>
+          <li><span>Analýza škôd a príčin poruchy</span></li>
+          <li><span>Správa náhradných dielov</span></li>
+          <li><span>Revízie, infraštruktúra, osvetlenie</span></li>
+        </ul>
+        <div class="ctas"><a class="btn btn-amber" href="tel:+421948111074">Nahlásiť poruchu</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROGRAMOVANIE ============ -->
+<section id="programovanie">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">05</span> Programovanie a automatizácia</div>
+    <div class="split">
+      <div>
+        <h2>Rozvádzač bez softvéru je len plech.</h2>
+        <p class="lead">Programujeme riadiace jednotky, vizualizácie aj vzdialenú správu. Integrujeme robotiku a oživujeme celé linky.</p>
+        <ul class="specs">
+          <li><span>PLC, HMI, vizualizácie, vzdialená správa</span></li>
+          <li><span>Integrácia robotických ramien</span></li>
+          <li><span>Oživenie výrobných liniek a dopravníkov</span></li>
+          <li><span>Riadenie elektrických a pneumatických pohonov</span></li>
+          <li><span>Elektroinštalácie na mieru — od priemyselných objektov po rodinné domy</span></li>
+        </ul>
+      </div>
+      <figure class="media wide" style="margin:0">
+        <img src="assets/plc_macro.jpg" alt="Makro PLC modulu so svietiacimi LED na DIN lište" loading="lazy">
+        <figcaption>PLC modul — diagnostické LED</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRE VÝROBCOV STROJOV ============ -->
+<section id="oem">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">06</span> Pre výrobcov strojov</div>
+    <div class="split rev">
+      <figure class="media wide" style="margin:0">
+        <img src="assets/machine_builder.jpg" alt="Výrobný stroj v hale so sivým rozvádzačom vedľa" loading="lazy">
+        <figcaption>Stroj a jeho rozvádzač — dodávka pre OEM</figcaption>
+      </figure>
+      <div>
+        <h2>Zmluvná výroba pre OEM.</h2>
+        <p class="lead">Vy staviate stroj, my staviame jeho elektrickú časť. Dokumentácia, výroba rozvádzača, programovanie aj uvedenie do prevádzky — podľa potreby ako celok alebo po krokoch.</p>
+        <ul class="specs">
+          <li><span>Zmluvná a projektová výroba rozvádzačov</span></li>
+          <li><span>Dokumentácia v EPLAN P8 a WSCAD</span></li>
+          <li><span>100 % testovanie — STN, UL, CSA, ATEX</span></li>
+          <li><span>Pôsobnosť: Slovensko a celá EÚ</span></li>
+        </ul>
+        <div class="ctas"><a class="btn btn-ghost" href="mailto:office@ems.limited">office@ems.limited</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERI ============ -->
+<section id="partneri">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">07</span> Technologickí partneri</div>
+    <div class="partners">
+      <div>EATON<small>KOMPONENTY</small></div>
+      <div>SIEMENS<small>RIADENIE</small></div>
+      <div>SCHNEIDER<small>ELECTRIC</small></div>
+      <div>LOXONE<small>AUTOMATIZÁCIA</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ E-SHOP ============ -->
+<section id="eshop">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">08</span> E-shop / Náhradné diely</div>
+    <h2>Sklad otvorený online.</h2>
+    <p class="lead" style="max-width:58ch">Komponenty a náhradné diely pre rozvádzače a riadiace systémy. Ceny sú uvedené v € bez DPH.</p>
+
+    <div class="cats" style="margin-top:22px">
+      <span class="cat">Ističe a istenie</span>
+      <span class="cat">Stykače a relé</span>
+      <span class="cat">PLC a I/O moduly</span>
+      <span class="cat">HMI panely</span>
+      <span class="cat">Svorkovnice a vodiče</span>
+      <span class="cat">Skrine a rozvodnice</span>
+      <span class="cat">Meniče frekvencie</span>
+      <span class="cat">Náhradné diely</span>
+    </div>
+
+    <div class="inv">
+      <div class="inv-hd"><span>POLOŽKA</span><span>CENA · DOSTUPNOSŤ · OBJEDNÁVKA</span></div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/istic.jpg" alt="Modulárny istič MCB na DIN lištu" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">Istič MCB 3P / 16 A / char. C</div>
+          <div class="sp">Modulárny · 6 kA · DIN TS35 · ističe a istenie</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock"><i></i>Skladom</div>
+          <div class="pr">24,90 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/stykac.jpg" alt="Priemyselný stýkač / reléový blok" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">Stýkač 3P / 25 A / cievka 230 V AC</div>
+          <div class="sp">Pomocný kontakt 1NO · stykače a relé</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock"><i></i>Skladom</div>
+          <div class="pr">46,50 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/plc.jpg" alt="PLC riadiaci modul s I/O svorkami" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">PLC riadiaci modul s I/O svorkami</div>
+          <div class="sp">Digitálne vstupy a výstupy · PLC a I/O moduly</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock low"><i></i>Posledné kusy</div>
+          <div class="pr">268,00 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/hmi.jpg" alt="HMI dotykový panel" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">HMI dotykový panel 7"</div>
+          <div class="sp">Ethernet · IP65 čelný panel · HMI panely</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock low"><i></i>Posledné kusy</div>
+          <div class="pr">512,00 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/svorkovnice.jpg" alt="DIN lišta osadená radovými svorkami" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">Radové svorky na DIN lištu — sada</div>
+          <div class="sp">Pružinové svorky · DIN TS35 · svorkovnice a vodiče</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock"><i></i>Skladom</div>
+          <div class="pr">31,20 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="thumb"><img src="assets/shop/skrina.jpg" alt="Oceľová rozvádzačová skriňa" loading="lazy" width="900" height="900"></div>
+        <div>
+          <div class="nm">Oceľová rozvádzačová skriňa</div>
+          <div class="sp">Montážna doska · skrine a rozvodnice</div>
+        </div>
+        <div class="itemfoot">
+          <div class="stock"><i></i>Skladom</div>
+          <div class="pr">189,00 €<small>BEZ DPH</small></div>
+          <button class="add" data-add>Do košíka</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pay">
+      <span>VISA</span>
+      <span>MASTERCARD</span>
+      <span>
+        <svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M7.1 2.3c-.5.6-1.2 1-1.9.9-.1-.7.3-1.5.7-2C6.4 .6 7.2.2 7.8.2c.1.8-.2 1.5-.7 2.1Zm.6 1c-1 0-1.9.6-2.4.6-.5 0-1.3-.6-2.1-.5C2 3.4 1 4 .5 5c-1 1.9-.3 4.6.7 6.1.5.7 1.1 1.5 1.9 1.5.7 0 1-.5 1.9-.5.9 0 1.1.5 1.9.5.8 0 1.3-.7 1.8-1.4.4-.6.6-1.1.6-1.2-.1 0-1.6-.6-1.6-2.4 0-1.5 1.2-2.2 1.3-2.3-.7-1-1.8-1.1-2.2-1.1Z" fill="none" stroke="#8A949D" stroke-width=".8" stroke-linejoin="round"/></svg>
+        APPLE PAY
+      </span>
+      <span>GOOGLE PAY</span>
+      <span>BANKOVÝ PREVOD</span>
+    </div>
+    <div class="disc">* Ceny a dostupnosť sú ilustračné pre účely návrhu. Finálny katalóg a cenník dodá EMS s.r.o.</div>
+  </div>
+</section>
+
+<!-- ============ SUPPORT 24/7 ============ -->
+<section id="support" class="support">
+  <div class="bgimg" aria-hidden="true"></div>
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">09</span> Support 24/7</div>
+    <div class="split">
+      <div>
+        <h2>Dvíhame aj o tretej ráno.</h2>
+        <p class="lead">Technická podpora a vzdialená správa bez prerušenia. Volajte priamo na dispečing — bez formulárov a bez čakania na pracovný čas.</p>
+        <a class="bignum mono" href="tel:+421948111074">+421 948 111 074</a>
+        <div class="ctas">
+          <a class="btn btn-primary" href="tel:+421948111074">Zavolať dispečing</a>
+          <a class="btn btn-ghost" href="mailto:office@ems.limited">office@ems.limited</a>
+        </div>
+      </div>
+      <div class="console">
+        <div class="body">
+          <div class="console-hd"><span class="dot" aria-hidden="true"></span><span>LINKA 24/7</span><span class="tag">AKTÍVNA</span></div>
+          <div class="rows">
+            <div class="row"><span class="k">DISPEČING</span><span class="fill" aria-hidden="true">....................................</span><span class="v amber">+421 948 111 074</span></div>
+            <div class="row"><span class="k">OBCHOD</span><span class="fill" aria-hidden="true">....................................</span><span class="v">+421 948 247 000</span></div>
+            <div class="row"><span class="k">CTO</span><span class="fill" aria-hidden="true">....................................</span><span class="v">+421 948 111 011</span></div>
+            <div class="row"><span class="k">E-MAIL</span><span class="fill" aria-hidden="true">....................................</span><span class="v acc">office@ems.limited</span></div>
+            <div class="row"><span class="k">REŽIM</span><span class="fill" aria-hidden="true">....................................</span><span class="v ok">NONSTOP</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KONTAKT ============ -->
+<section id="kontakt">
+  <div class="wrap sec rv">
+    <div class="eyebrow"><span class="idx">10</span> Kontakt</div>
+    <h2>EMS s.r.o. — Prievidza.</h2>
+    <p class="lead" style="max-width:56ch">Pošlite podklady, schému alebo len popis stroja. Ozveme sa.</p>
+    <div class="contactgrid" style="margin-top:26px">
+      <div class="card">
+        <h4>Sídlo</h4>
+        <div class="lines">
+          <b>EMS s.r.o.</b><br>
+          J. I. Bajzu 14<br>
+          971 01 Prievidza<br>
+          Slovensko
+        </div>
+      </div>
+      <div class="card">
+        <h4>Spojenie</h4>
+        <div class="lines">
+          Centrála 24/7<br><b><a href="tel:+421948111074">+421 948 111 074</a></b><br>
+          Obchod<br><b><a href="tel:+421948247000">+421 948 247 000</a></b><br>
+          <b><a href="mailto:office@ems.limited">office@ems.limited</a></b><br>
+          <b>www.ems.limited</b>
+        </div>
+      </div>
+      <div class="card">
+        <h4>CTO / Fakturácia</h4>
+        <div class="lines">
+          <b>Barnabas Palco</b> — CTO<br>
+          <a href="tel:+421948111011">+421 948 111 011</a><br>
+          <a href="mailto:palco@ems.limited">palco@ems.limited</a><br>
+          IČO 54890161<br>
+          DIČ 2121820943<br>
+          IČ DPH SK2121820943
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fbot">
+      <span>EMS LIMITED · ZALOŽENÁ 2022 · 25+ ROKOV SKÚSENOSTÍ</span>
+      <span class="r">SLOVENSKO + EÚ</span>
+    </div>
+  </div>
+</footer>
+
+<div class="statusstrip">
+  <div class="wrap inner">
+    <span class="dot" aria-hidden="true"></span>
+    <span>SUPPORT 24/7 AKTÍVNY</span>
+    <span class="sep">·</span>
+    <span class="meta">PRIEVIDZA, SK</span>
+    <span class="num"><span class="meta">DISPEČING </span><a href="tel:+421948111074">+421 948 111 074</a></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  // language dropdown (visual only)
+  var btn=document.getElementById('langBtn'),menu=document.getElementById('langMenu'),cur=document.getElementById('langCur');
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var open=menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded',open?'true':'false');
+  });
+  menu.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.tagName!=='BUTTON')return;
+    cur.textContent=t.textContent;
+    menu.querySelectorAll('button').forEach(function(b){b.removeAttribute('aria-current');});
+    t.setAttribute('aria-current','true');
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  });
+  document.addEventListener('click',function(){
+    menu.classList.remove('open');btn.setAttribute('aria-expanded','false');
+  });
+
+  // cart counter (visual only)
+  var n=0,out=document.getElementById('cartN');
+  document.querySelectorAll('[data-add]').forEach(function(b){
+    b.addEventListener('click',function(){
+      n++;out.textContent=n;
+      var old=b.textContent;b.textContent='Pridané';
+      setTimeout(function(){b.textContent=old;},1100);
+    });
+  });
+
+  // interaktívny 7-krokový proces (akordeón, konzolový log)
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  var triggers=Array.prototype.slice.call(document.querySelectorAll('[data-step]'));
+  function panelOf(b){return document.getElementById(b.getAttribute('aria-controls'));}
+  function rowOf(b){return b.parentNode;}
+  function noMotion(){return reduce.matches;}
+
+  function close(b){
+    var p=panelOf(b);
+    b.setAttribute('aria-expanded','false');
+    rowOf(b).classList.remove('open');
+    if(noMotion()){p.style.maxHeight='';p.hidden=true;return;}
+    p.style.maxHeight=p.scrollHeight+'px';
+    void p.offsetHeight;
+    p.style.maxHeight='0px';
+    var done=function(e){
+      if(e&&e.propertyName!=='max-height')return;
+      p.hidden=true;p.style.maxHeight='';p.removeEventListener('transitionend',done);
+    };
+    p.addEventListener('transitionend',done);
+  }
+
+  function open(b,scroll){
+    var p=panelOf(b);
+    b.setAttribute('aria-expanded','true');
+    rowOf(b).classList.add('open');
+    p.hidden=false;
+    if(noMotion()){p.style.maxHeight='none';}
+    else{
+      p.style.maxHeight='0px';
+      void p.offsetHeight;
+      p.style.maxHeight=p.scrollHeight+'px';
+      var done=function(e){
+        if(e&&e.propertyName!=='max-height')return;
+        p.style.maxHeight='none';p.removeEventListener('transitionend',done);
+      };
+      p.addEventListener('transitionend',done);
+    }
+    if(scroll){
+      var doScroll=function(){
+        var r=rowOf(b).getBoundingClientRect();
+        var top=window.pageYOffset+r.top-90;
+        if(r.top<70||r.bottom>window.innerHeight-60){
+          window.scrollTo({top:top,behavior:noMotion()?'auto':'smooth'});
+        }
+      };
+      if(noMotion())doScroll();else setTimeout(doScroll,80);
+    }
+  }
+
+  triggers.forEach(function(b){
+    // predvolený otvorený stav (krok 04) — nastav výšku bez animácie
+    if(b.getAttribute('aria-expanded')==='true'){
+      panelOf(b).hidden=false;
+      panelOf(b).style.maxHeight='none';
+    }
+    b.addEventListener('click',function(){
+      var isOpen=b.getAttribute('aria-expanded')==='true';
+      triggers.forEach(function(o){
+        if(o!==b&&o.getAttribute('aria-expanded')==='true')close(o);
+      });
+      if(isOpen)close(b);else open(b,true);
+    });
+    b.addEventListener('keydown',function(e){
+      if(e.key===' '||e.key==='Spacebar'||e.key==='Enter'){e.preventDefault();b.click();}
+    });
+  });
+
+  // scroll reveal
+  var rm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els=document.querySelectorAll('.rv');
+  if(rm||!('IntersectionObserver' in window)){
+    els.forEach(function(el){el.classList.add('in');});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}
+      });
+    },{rootMargin:'0px 0px -8% 0px',threshold:0.06});
+    els.forEach(function(el){io.observe(el);});
+  }
+})();
+</script>
+</body>
+</html>
